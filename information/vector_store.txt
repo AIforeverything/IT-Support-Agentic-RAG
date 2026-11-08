@@ -1,0 +1,507 @@
+Your code is following a singleton-style design pattern with lazy initialization. This is a good approach for an Agentic RAG application because embedding models, Pinecone connections, vector stores, and rerankers can be expensive to initialize.
+
+However, your current implementation has a few issues:
+
+1. `get_embedding_model()` creates a new embedding model every time it is called.
+2. `embedding_model_dimension()` assumes `_embeddings` has already been initialized.
+3. `get_vectorstore()` does not initialize embeddings before creating the vector store.
+4. `add_documents()` assumes `_vectorstore` already exists.
+5. `get_reranker()` creates a new CrossEncoder every time it is called.
+6. `get_reranker()` uses `_vectorstore.invoke(query)` instead of explicitly using the configured retriever.
+7. Your index deletion logic can delete an existing index containing valuable vectors if dimensions don't match. This should be handled carefully.
+
+Let's understand the concepts first and then look at corrected code.
+
+# 1. What is the purpose of `_embeddings = None`?
+
+Consider:
+
+```
+_embeddings = None_vectorstore = None_reranker = None
+```
+
+These are global variables used to store objects that you want to initialize once and reuse throughout your application.
+
+The underscore `_` at the beginning is a Python naming convention.
+
+It means:
+
+- This variable is intended for internal use within the module.
+- It is not intended to be accessed directly by other modules.
+- It is not private in the strict Python sense.
+
+The `None` means that the object has not been created yet.
+
+For example:
+
+```
+_embeddings = Nonedef get_embedding_model():    global _embeddings    if _embeddings is None:        _embeddings = HuggingFaceEmbeddings(            model_name="sentence-transformers/all-MiniLM-L6-v2"        )    return _embeddings
+```
+
+Let's understand what happens.
+
+First function call
+
+```
+get_embedding_model()
+```
+
+None
+
+Initialize model
+
+Store model
+
+`_embeddings` now contains the initialized model.
+
+Second function call
+
+```
+get_embedding_model()
+```
+
+Model exists
+
+Reuse model
+
+No new model is created.
+
+This is called lazy initialization because the model is initialized only when it is needed.
+
+It also follows the singleton-style pattern because the same object is reused rather than creating multiple instances.
+
+## 2. Why do we use `global _embeddings`?
+
+Consider:
+
+```
+_embeddings = Nonedef get_embedding_model():    _embeddings = HuggingFaceEmbeddings(...)
+```
+
+This code does not update the global `_embeddings`.
+
+Python treats `_embeddings` inside the function as a local variable because you assign a value to it.
+
+To modify the global variable, you need:
+
+```
+def get_embedding_model():    global _embeddings    _embeddings = HuggingFaceEmbeddings(...)
+```
+
+Now Python knows that you want to modify the module-level variable.
+
+Important: You only need `global` when assigning to the global variable. You don't need it merely to read the variable or call methods on its object.
+
+For example:
+
+```
+def embedding_model_dimension():    return len(_embeddings.embed_query("What is AI?"))
+```
+
+No `global` is required here because you're only reading `_embeddings`.
+
+# 3. Why do we need three global variables?
+
+| Variable       | Purpose                                     | Why reuse it?                                  |
+| -------------- | ------------------------------------------- | ---------------------------------------------- |
+| `_embeddings`  | Converts text into numerical vectors        | Loading the embedding model can be expensive   |
+| `_vectorstore` | Connects LangChain with your Pinecone index | Avoid repeatedly creating vector-store objects |
+| `_reranker`    | Ranks retrieved documents by relevance      | Loading a CrossEncoder model can be expensive  |
+
+In a RAG application, the workflow looks like this:
+
+User Query
+
+Embedding Model
+
+`_embeddings`
+
+Converts query into a vector
+
+Pinecone Vector Store
+
+`_vectorstore`
+
+Retrieves similar document chunks
+
+CrossEncoder Reranker
+
+`_reranker`
+
+Reorders documents based on relevance
+
+Top Relevant Documents
+
+# 4. Corrected code for your Agentic RAG project
+
+I recommend keeping your existing structure but fixing the initialization logic.
+
+Recommended implementation
+
+```
+# STEP 6: Add documents to vector storedef add_documents(chunks):    vectorstore = get_vectorstore()    return vectorstore.add_documents(chunks)# STEP 7: Create retrieverdef get_retriever():    vectorstore = get_vectorstore()    return vectorstore.as_retriever(        search_kwargs={            "k": settings.TOP_K        }    )# STEP 8: Initialize CrossEncoder rerankerdef get_reranker_model():    global _reranker    if _reranker is None:        _reranker = CrossEncoder(            model_name_or_path=settings.RERANKING_MODEL_NAME        )    return _reranker# STEP 9: Retrieve and rerank documentsdef rerank_documents(query: str, top_n: int = 3):    # Retrieve relevant documents    retriever = get_retriever()    kb_docs = retriever.invoke(query)    if not kb_docs:        return []    # Get the existing CrossEncoder model    reranker = get_reranker_model()    # Create query-document pairs    pairs = [        [query, doc.page_content]        for doc in kb_docs    ]    # Calculate relevance scores    scores = reranker.predict(pairs)    # Combine documents with scores    scored_docs = list(zip(kb_docs, scores))    # Sort by relevance score (highest first)    scored_docs.sort(        key=lambda x: x[1],        reverse=True    )    # Return top N documents    return [        doc for doc, score in scored_docs[:top_n]    ]
+```
+
+This version avoids repeatedly loading models and prevents accidental deletion of an existing Pinecone index when dimensions don't match.
+
+Note: This is a single-process lazy-initialization implementation. In a multi-worker production deployment, each worker will have its own model instances and cached objects. Thread-safe initialization may also be needed if multiple requests can initialize these objects simultaneously.
+
+# 5. Understanding each function in detail
+
+## A. `get_embedding_model()`
+
+```
+def get_embedding_model():    global _embeddings    if _embeddings is None:        _embeddings = HuggingFaceEmbeddings(            model_name=_EMBEDDING_MODEL_NAME,            encode_kwargs={"normalize_embeddings": True}        )    return _embeddings
+```
+
+Purpose: Load the Hugging Face embedding model only once.
+
+Suppose your application receives 100 user queries.
+
+Without lazy initialization:
+
+```
+def get_embedding_model():    return HuggingFaceEmbeddings(        model_name=_EMBEDDING_MODEL_NAME    )
+```
+
+You could load the model 100 times.
+
+With lazy initialization:
+
+- First request: loads the model.
+- Second request: reuses the model.
+- Third request: reuses the model.
+- 100th request: reuses the model.
+
+This saves initialization time and memory.
+
+## B. `embedding_model_dimension()`
+
+```
+def embedding_model_dimension():    embedding_model = get_embedding_model()    sample_vector = embedding_model.embed_query(        "What is AI?"    )    return len(sample_vector)
+```
+
+Why do we need this?
+
+Pinecone requires you to specify the vector dimension when creating an index.
+
+For example:
+
+| Embedding model       | Typical dimension |
+| --------------------- | ----------------- |
+| all-MiniLM-L6-v2      | 384               |
+| all-mpnet-base-v2     | 768               |
+| BAAI/bge-base-en-v1.5 | 768               |
+
+These are examples; always verify the actual output of your selected model.
+
+Suppose your embedding model produces:
+
+```
+[0.12, 0.34, 0.56, 0.78]
+```
+
+The dimension is:
+
+```
+len(sample_vector)  # 4
+```
+
+Pinecone must be configured with the same dimension.
+
+Important: The embedding model used to insert documents and the model used to embed queries must be compatible. Otherwise, similarity search won't work correctly.
+
+## C. `ensure_index()`
+
+This function performs three important tasks:
+
+1. Checks whether the Pinecone index exists.
+2. Checks whether its dimension matches your embedding model.
+3. Creates the index if it doesn't exist.
+
+Why do we need this?
+
+Imagine your embedding model produces 384-dimensional vectors.
+
+But your Pinecone index was created with 768 dimensions.
+
+You cannot insert 384-dimensional vectors into a 768-dimensional index.
+
+The corrected implementation raises an error rather than deleting your existing index.
+
+Why is that important?
+
+Your existing index may contain thousands of document vectors. Automatically deleting it could destroy your stored knowledge base.
+
+## D. `get_vectorstore()`
+
+```
+def get_vectorstore():    global _vectorstore    if _vectorstore is None:        embedding_model = get_embedding_model()        index = ensure_index()        _vectorstore = PineconeVectorStore(            index=index,            embedding=embedding_model,            namespace=settings.PINECONE_INDEX_NAMESPACE        )    return _vectorstore
+```
+
+This is one of the most important functions.
+
+It connects three components:
+
+- Embedding model
+- Pinecone index
+- LangChain vector store
+
+Think of it this way:
+
+| Component             | Responsibility                   |
+| --------------------- | -------------------------------- |
+| HuggingFaceEmbeddings | Converts text into vectors       |
+| Pinecone              | Stores and searches vectors      |
+| PineconeVectorStore   | Connects LangChain with Pinecone |
+
+Why use `_vectorstore = None`?
+
+Because you don't want to create a new vector-store object every time you retrieve documents or insert chunks.
+
+You initialize it once and reuse it.
+
+## E. `add_documents(chunks)`
+
+```
+def add_documents(chunks):    vectorstore = get_vectorstore()    return vectorstore.add_documents(chunks)
+```
+
+Suppose your document processing pipeline produces:
+
+```
+chunks = [    Document(page_content="How to reset a password..."),    Document(page_content="How to configure a VPN...")]
+```
+
+When you call:
+
+```
+add_documents(chunks)
+```
+
+The process is:
+
+1. Get the existing vector store.
+2. Convert each document chunk into an embedding.
+3. Store the vectors in Pinecone.
+4. Store the associated text and metadata.
+
+You don't need to manually generate embeddings here. LangChain handles that through the configured embedding model.
+
+## F. `get_retriever()`
+
+```
+def get_retriever():    vectorstore = get_vectorstore()    return vectorstore.as_retriever(        search_kwargs={"k": settings.TOP_K}    )
+```
+
+A retriever is an abstraction that fetches relevant documents based on a query.
+
+For example:
+
+```
+retriever = get_retriever()docs = retriever.invoke(    "How do I reset my password?")
+```
+
+If:
+
+```
+TOP_K = 5
+```
+
+The retriever attempts to return the five most similar document chunks.
+
+## G. `get_reranker_model()`
+
+```
+def get_reranker_model():    global _reranker    if _reranker is None:        _reranker = CrossEncoder(            model_name_or_path=settings.RERANKING_MODEL_NAME        )    return _reranker
+```
+
+Why do we need another global variable?
+
+Because CrossEncoder models can also be expensive to load.
+
+For example:
+
+```
+_reranker = None
+```
+
+First request:
+
+```
+reranker = get_reranker_model()
+```
+
+Loads the CrossEncoder model into memory.
+
+Second request:
+
+```
+reranker = get_reranker_model()
+```
+
+Reuses the already loaded model.
+
+You avoid loading the same model repeatedly.
+
+## H. `rerank_documents(query)`
+
+This is where the actual reranking happens.
+
+First, understand why reranking is necessary.
+
+Vector similarity search and reranking are two different operations.
+
+Suppose the user asks:
+
+"What is the process for resetting an employee password?"
+
+Pinecone retrieves five documents based on embedding similarity.
+
+| Document                             | Initial retrieval rank |
+| ------------------------------------ | ---------------------- |
+| Document A: Password policy          | 1                      |
+| Document B: Employee onboarding      | 2                      |
+| Document C: Password reset procedure | 3                      |
+| Document D: Account security         | 4                      |
+| Document E: VPN configuration        | 5                      |
+
+But embedding similarity doesn't always identify the most relevant document.
+
+The CrossEncoder evaluates the query and each retrieved document together.
+
+It might produce:
+
+| Document   | Reranker score | New rank |
+| ---------- | -------------- | -------- |
+| Document C | 9.5            | 1        |
+| Document A | 8.2            | 2        |
+| Document D | 7.1            | 3        |
+| Document B | 5.4            | 4        |
+| Document E | 2.1            | 5        |
+
+Illustrative scores, not actual model output.
+
+Then:
+
+```
+reranked_docs = rerank_documents(query, top_n=3)
+```
+
+Returns only the three most relevant documents.
+
+### How does CrossEncoder work?
+
+It takes two inputs:
+
+1. User query
+2. Document text
+
+For example:
+
+```
+pairs = [    [        "How to reset employee password?",        "Employees can reset their passwords through the IT portal."    ],    [        "How to reset employee password?",        "VPN configuration requires administrator access."    ]]
+```
+
+Then:
+
+```
+scores = reranker.predict(pairs)
+```
+
+The model evaluates each query-document pair and generates a relevance score.
+
+Unlike a bi-encoder embedding model, a CrossEncoder jointly processes the query and document. This generally provides better relevance ranking, although it is more computationally expensive.
+
+# 6. Complete RAG retrieval flow
+
+Now let's connect everything.
+
+Document ingestion
+
+Documents
+
+Text Splitter
+
+`_embeddings`
+
+Generate vectors
+
+`_vectorstore`
+
+Store vectors in Pinecone
+
+Query and retrieval
+
+User Query
+
+`_embeddings`
+
+Generate query vector
+
+`get_retriever()`
+
+Retrieve TOP_K documents
+
+`_reranker`
+
+Rerank retrieved documents
+
+Top 3 relevant documents
+
+LLM generates final answer
+
+# 7. Important improvements for production
+
+A few things to remember for your IT Support Agentic RAG project:
+
+| Area            | Recommendation                                     |
+| --------------- | -------------------------------------------------- |
+| Embedding model | Initialize once and reuse                          |
+| Pinecone client | Initialize once and reuse                          |
+| Vector store    | Initialize once and reuse                          |
+| CrossEncoder    | Initialize once and reuse                          |
+| Index dimension | Never automatically delete a populated index       |
+| Namespace       | Keep ingestion and retrieval namespaces consistent |
+| TOP_K           | Retrieve more documents than you ultimately rerank |
+| Reranking       | Return only the most relevant documents            |
+
+### Why did I remove namespace from `search_kwargs`?
+
+Your original code had:
+
+```
+_vectorstore = PineconeVectorStore(    index=index,    embedding=_embeddings,    namespace=settings.PINECONE_INDEX_NAMESPACE,)
+```
+
+And:
+
+```
+search_kwargs={    "k": settings.TOP_K,    "namespace": settings.PINECONE_INDEX_NAMESPACE,}
+```
+
+You don't need to specify the namespace twice. Setting it in the vector-store constructor is sufficient for the normal retriever workflow.
+
+### One important distinction: Singleton versus global variable
+
+These concepts are related, but not identical.
+
+- Global variable: A variable accessible throughout its module.
+- Singleton pattern: A design approach that ensures only one instance of an object is created and reused.
+- Lazy initialization: Creating the object only when it is first needed.
+
+Your implementation combines all three concepts.
+
+One limitation: Python module-level globals are shared within a single Python process, not across separate processes or servers. If you run four FastAPI workers, each worker can load its own embedding and reranking models.
+
+# 8. Test your implementation
+
+After implementing the corrected code, try these tests:
+
+```
+# Test 1: Embedding modelemb1 = get_embedding_model()emb2 = get_embedding_model()print(emb1 is emb2)  # True# Test 2: Vector storevs1 = get_vectorstore()vs2 = get_vectorstore()print(vs1 is vs2)  # True# Test 3: Rerankerr1 = get_reranker_model()r2 = get_reranker_model()print(r1 is r2)  # True# Test 4: Embedding dimensionprint(embedding_model_dimension())# Test 5: Retrieve and rerankquery = "How do I reset my employee password?"docs = rerank_documents(query, top_n=3)for i, doc in enumerate(docs, 1):    print(f"\nDocument {i}:")    print(doc.page_content)
+```
+
+The first three tests should print `True`, assuming you haven't reset the module globals between calls.
+
+My recommendation: Understand these three concepts particularly well: lazy initialization, singleton pattern, and dependency reuse. They are important when building production-grade RAG applications with FastAPI, LangChain, Pinecone, and local Hugging Face models.
