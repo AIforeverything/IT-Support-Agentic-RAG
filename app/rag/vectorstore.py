@@ -106,3 +106,14 @@ def get_retriever():
 
 
 def get_reranker(query: str, kb_docs):
+    # step-1: making reranker
+    reranker= CrossEncoder(model_name_or_path=settings.RERANKING_MODEL_NAME)
+
+    # step-2: create query document pairs
+    pairs= [[query,doc.page_content] for doc in kb_docs]
+
+    # Step-3: calculating reranking scores
+    scores= reranker.predict(pairs)
+
+    # step-4: attach scores to documents
+    
