@@ -2,7 +2,7 @@ from app.core.logging import configure_logging
 from app.core.config import get_settings
 from langchain_groq import ChatGroq
 
-logger = configure_logging()
+# logger = configure_logging()
 settings = get_settings()
 
 _llm = None

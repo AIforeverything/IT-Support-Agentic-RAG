@@ -1,10 +1,14 @@
-import json
-from typing import List, TypedDict, Literal
+# import json
+from typing import Literal
 from app.services.llm import llm
 from app.tools.tools import web_search_tool
 from app.rag.state import AgentState, DecisionRoute, GradingAnswer
 from app.rag.vectorstore import rerank_documents
-from app.core.prompt_loader import loading_prompt_formatting_using_langchain
+from app.core.prompt_loader import (
+    loading_prompt_formatting_using_langchain,
+    get_prompt,
+    get_prompt_version,
+)
 
 from app.core.config import get_settings
 
@@ -22,9 +26,7 @@ def route_question(state: AgentState):
 
     # loading the prompt from prompts.yaml
     prompt_name = "decision_router_prompt"
-    decision = router.invoke(
-        loading_prompt_formatting_using_langchain(prompt_name=prompt_name, state=state)
-    )
+    decision = router.invoke(f"{get_prompt(prompt_name)}")
     return {
         "source_used": decision.route,
         "trace": add_trace(state=state, message=f"Router -> {decision.route.upper()}"),
@@ -32,9 +34,9 @@ def route_question(state: AgentState):
 
 
 # function for conditional edges
-def route_after_routing(state: AgentState) -> Literal["retriever_kb", "direct_answer"]:
+def route_after_routing(state: AgentState) -> Literal["retrieve_kb", "direct_answer"]:
     if state["source_used"] == "kb":
-        return "retriever_kb"
+        return "retrieve_kb"
     return "direct_answer"
 
 
@@ -57,16 +59,14 @@ def grade_kb_evidence(state: AgentState):
         schema=GradingAnswer, method="json_schema"
     )
 
-    query = state["query"]
+    # query = state["query"]
     context = "\n\n".join(
         f"source: {doc.metadata.get('source')} \n {doc.page_content}"
         for doc in state["kb_docs"]
     )
     # loading the prompt from prompts.yaml
     prompt_name = "kb_grader_prompt"
-    grade = kb_grader_llm.invoke(
-        loading_prompt_formatting_using_langchain(prompt_name=prompt_name, state=state)
-    )
+    grade = kb_grader_llm.invoke(f"{get_prompt(prompt_name)}")
 
     return {
         "kb_grade": grade.grade,
@@ -116,16 +116,14 @@ def search_web(state: AgentState):
 
 ## Node 5 — Grade Web Evidence
 def grade_web_evidence(state: AgentState):
-    query = state["query"]
+    # query = state["query"]
     web_results = state["web_results"]
     web_grader_llm = llm().with_structured_output(
         schema=GradingAnswer, method="json_schema"
     )
     # loading the prompt from prompts.yaml
     prompt_name = "web_grader_prompt"
-    grade = web_grader_llm.invoke(
-        loading_prompt_formatting_using_langchain(prompt_name=prompt_name, state=state)
-    )
+    grade = web_grader_llm.invoke(f"{get_prompt(prompt_name)}")
     return {
         "web_grade": grade.grade,
         "trace": add_trace(
@@ -146,12 +144,10 @@ def decide_after_web_grade(
 
 # Node 6 — Rewrite the Query
 def rewrite_query(state: AgentState):
-    query = state["query"]
+    # query = state["query"]
     retry_count = state["retry_count"] + 1
     prompt_name = "rewrite_query_prompt"
-    rewritten = llm().invoke(
-        loading_prompt_formatting_using_langchain(prompt_name=prompt_name, state=state)
-    )
+    rewritten = llm().invoke(f"{get_prompt(prompt_name)}")
     return {
         "current_query": rewritten.content,
         "retry_count": state["retry_count"] + 1,
@@ -161,16 +157,14 @@ def rewrite_query(state: AgentState):
 
 ## Node 7 — Generate from Private KB
 def generate_from_kb(state: AgentState):
-    query = state["query"]
+    # query = state["query"]
     context = "\n\n".join(
         f"[kb_source: {doc.metadata.get('source')}]\n {doc.page_content}"
         for doc in state["kb_docs"]
     )
     # loading the prompt from prompts.yaml
     prompt_name = "generate_from_kb_prompt"
-    answer = llm().invoke(
-        loading_prompt_formatting_using_langchain(prompt_name=prompt_name, state=state)
-    )
+    answer = llm().invoke(f"{get_prompt(prompt_name)}")
 
     citations = []
     seen = set()
@@ -191,13 +185,11 @@ def generate_from_kb(state: AgentState):
 
 # Node-8: Generate from web search
 def generate_from_web(state: AgentState):
-    query = state["query"]
+    # query = state["query"]
     web_results = state["web_results"]
     # loading the prompt from prompts.yaml
     prompt_name = "generate_from_web_prompt"
-    answer = llm().invoke(
-        loading_prompt_formatting_using_langchain(prompt_name=prompt_name, state=state)
-    )
+    answer = llm().invoke(f"{get_prompt(prompt_name)}")
     return {
         "answer": answer.content,
         "source_used": "web_search",
@@ -207,12 +199,10 @@ def generate_from_web(state: AgentState):
 
 # Node-9: Direct answer
 def direct_answer(state: AgentState):
-    query = state["query"]
+    # query = state["query"]
     # loading the prompt from prompts.yaml
     prompt_name = "direct_answer_prompt"
-    answer = llm().invoke(
-        loading_prompt_formatting_using_langchain(prompt_name=prompt_name, state=state)
-    )
+    answer = llm().invoke(f"{get_prompt(prompt_name)}")
     return {
         "answer": answer.content,
         "source_used": "direct",

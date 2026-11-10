@@ -8,7 +8,7 @@ prompts:
       Use kb for questions about company IT policies, VPN, password reset, MFA, laptop setup,
       software access, security, email, devices, troubleshooting, or technology support.
       Use direct only for greetings, thanks, or casual chat that needs no company knowledge.
-      Query: {state['query']}
+      query: {state['query']}
       Return valid JSON like {{'route':'kb'}}
 
   kb_grader_prompt:
@@ -16,7 +16,7 @@ prompts:
     description: "This is the key step that decides whether we can answer from the private KB or need web fallback."
     template: |
       You are an evidence grader.
-      Query: {query},
+      query: {state['query']},
       Private KB evidence: {context}
       If the private kb evidence can answer the query, return "good".
       Return "weak" if it can not answer the query or is incomplete
@@ -29,7 +29,7 @@ prompts:
     description: if the web_results is enough to answer the query, return "good", else return "weak".
     template: |
       you are a web result grader
-      query:{query}
+      query: {state['query']}
       web_results: {web_results}
 
       if the web_results is enough to answer the query, return "good",
@@ -44,15 +44,9 @@ prompts:
     version: "1.0.0"  
     description: If both KB and web evidence are weak, we rewrite once and then try the KB again.
     template: |
-      rewrite the query for better retrieval and web search.
-      Rules:
-      - Preserve original intent 
-      - Make it specific and search friendly   
-      - Do not answer
-      - Return only the rewritten query
-      
-      Original query:
-      {query}
+      Rewrite this IT support question for better private knowledge retrieval and vendor web search.
+      Preserve intent, add useful technical keywords, do not answer, return only the query.
+      question: {state['query']}
 
   generate_from_kb_prompt:
     version: "1.0.0"  
@@ -68,7 +62,7 @@ prompts:
       - Mention that the answer is based on the Private KB
       - Include source type : Private KB
 
-      query: {query}
+      query: {state['query']}
       Private KB context: {context}
 
   generate_from_web_prompt:
@@ -85,7 +79,7 @@ prompts:
       - Mention that the answer is based on Tavily web result
       - If URLs are present in the context, include the most useful URLs 
 
-      query: {query}
+      query: {state['query']}
       web search context: {web_results} 
 
   direct_answer_prompt:

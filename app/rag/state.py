@@ -28,5 +28,5 @@ class AgentState(TypedDict):
     answer: str
     source_used: str
     retry_count: int
-    trace: str
-    citations: List[str]
+    trace: List[str]
+    citations: List[dict]
