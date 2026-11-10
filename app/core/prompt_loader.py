@@ -25,7 +25,7 @@ def get_prompt_version(prompt_name: str):
     return data["prompts"][prompt_name]["version"]
 
 
-def loading_prompt_using_langchain(prompt_name: str, state: AgentState):
+def loading_prompt_formatting_using_langchain(prompt_name: str, state: AgentState):
     # step-1: loading prompt template
     prompt_template = get_prompt(prompt_name)
     # step-2: creating langchain prompt
