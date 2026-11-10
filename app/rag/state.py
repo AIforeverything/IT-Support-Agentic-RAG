@@ -15,7 +15,7 @@ class GradingAnswer(BaseModel):
     )
 
 
-class AgentState(BaseModel):
+class AgentState(TypedDict):
     query: str
     current_query: str
 

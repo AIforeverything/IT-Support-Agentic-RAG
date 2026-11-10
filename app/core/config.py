@@ -11,10 +11,11 @@ class Settings(BaseSettings):
     APP_ENV: str = "Development"
     HUGGINGFACE_API_KEY: str = ""  # not mandatory, because str = ''
     GEMINI_API_KEY: str = ""
-    GROQ_API_KEY: str = ""
+    GROQ_API_KEY: str
     GROQ_MODEL: str  # required, otherwise pydantic throws an error
     LANGSMITH_API_KEY: str = ""
     TAVILY_API_KEY: str  # required
+    TEMPERATURE: float = 0
 
     EMBEDDING_MODEL_NAME: str  # required
     RERANKING_MODEL_NAME: str  # required
@@ -24,7 +25,7 @@ class Settings(BaseSettings):
 
     MAX_RETRIES: int = 1
     TOP_K: int = 10
-    TOP_K_RANKED: int = 3
+    TOP_N_RANKED: int = 3
     ADMIN_API_KEY: str = "load"
     AUDIT_DB_PATH: str = str(BASE_PATH / "data" / "audit.db")
     UPLOAD_DIR: str = str(BASE_PATH / "uploads")
