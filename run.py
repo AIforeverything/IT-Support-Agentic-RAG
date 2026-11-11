@@ -1,5 +1,6 @@
-from app.core.config import get_settings
+from app.rag.workflow import ask
 
-config = get_settings()
+answer = ask(
+    "Hello, how are you?")
 
-print(config.APP_NAME)
+print(answer)

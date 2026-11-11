@@ -24,7 +24,17 @@ def load_file(path: Path) -> list[Document]:
 
 
 def chunk_documents(docs: Iterable[Document]) -> list[Document]:
+    # Optimized for all-MiniLM-L6-v2 (256 token limit)
     splitter = RecursiveCharacterTextSplitter(
-        chunk_size=900, chunk_overlap=180, add_start_index=True
+        chunk_size=600,
+        chunk_overlap=120,
+        add_start_index=True,
+        length_function=len,
+        separators=[
+            "\n\n",
+            "\n",
+            " ",
+            "",
+        ],  # Splits naturally at paragraphs, then lines, then words
     )
     return splitter.split_documents(list(docs))

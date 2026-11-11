@@ -1,0 +1,100 @@
+version: '1.0.0'
+prompts:
+  decision_router_prompt:
+    version: '1.0.0'
+    description: "Routes user message to knowledge base or direct response"
+    template: |
+      You route messages for an enterprise IT support assistant.
+      Use kb for questions about company IT policies, VPN, password reset, MFA, laptop setup,
+      software access, security, email, devices, troubleshooting, or technology support.
+      Use direct only for greetings, thanks, or casual chat that needs no company knowledge.
+      query: {query}
+      Return valid JSON.
+      Example:
+      {{'route':'kb'}}
+
+  kb_grader_prompt:
+    version: "1.0.0"  
+    description: "This is the key step that decides whether we can answer from the private KB or need web fallback."
+    template: |
+      You are an evidence grader.
+      query: {query},
+      Private KB evidence: {context}
+      If the private kb evidence can answer the query, return "good".
+      Return "weak" if it can not answer the query or is incomplete
+      Return response as valid JSON matching the schema.
+      Example:
+      {{"grade": "good"}}  
+
+  web_grader_prompt:
+    version: "1.0.0"  
+    description: if the web_results is enough to answer the query, return "good", else return "weak".
+    template: |
+      you are a web result grader
+      query: {query}
+      web_results: {web_results}
+
+      if the web_results is enough to answer the query, return "good",
+      else return "weak".
+
+      Return your response as valid JSON.
+      Example:
+      {{"grade": "good"}} 
+
+
+  rewrite_query_prompt:   
+    version: "1.0.0"  
+    description: If both KB and web evidence are weak, we rewrite once and then try the KB again.
+    template: |
+      Rewrite this IT support question for better private knowledge retrieval and vendor web search.
+      Preserve intent, add useful technical keywords, do not answer, return only the query.
+      question: {query}
+
+  generate_from_kb_prompt:
+    version: "1.0.0"  
+    description: generating answer from kb
+    template: |
+      You are an enterprise IT support copilot. Answer ONLY from the private company KB.
+      Be concise, actionable, and safe. If steps are present, present them clearly.
+      Do not invent policy details. Mention that the answer is based on the company's private knowledge base.
+
+      Rules:
+      - Beginner friendly explanation
+      - Do not invent unsupported details
+      - Mention that the answer is based on the Private KB
+      - Include source type : Private KB
+
+      query: {query}
+      Private KB context: {context}
+
+  generate_from_web_prompt:
+    version: "1.0.0"  
+    description: generating answer from web search using Tavily Search
+    template: |
+      you are a technical instructor
+      Private KB is insufficient so web search is used
+      Answer using only the web search context
+
+      Rules:
+      - Beginner-friendly explanation
+      - Do not invent unsupported details
+      - Mention that the answer is based on Tavily web result
+      - If URLs are present in the context, include the most useful URLs 
+
+      query: {query}
+      web search context: {web_results} 
+
+  direct_answer_prompt:
+    version: "1.0.0"  
+    description: generating answer directly using LLM
+    template: |
+      Respond briefly and naturally
+      Message: {query}  
+
+  answer_insufficient_prompt:
+    version: "1.0.0"  
+    description: insufficient evidence to answer
+    template: |
+      "Sorry.I could not find enough evidence to answer from private knowledge base or web search."
+      "Please specify more specific documents or rephrase the question "    
+      
