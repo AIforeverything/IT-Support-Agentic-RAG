@@ -117,14 +117,50 @@ def add_documents(chunks):
     return vectorstore.add_documents(chunks)
 
 
-# Step-7 : making retriever
+# STEP 7: Create retriever
 
 
 def get_retriever():
     return get_vectorstore().as_retriever(
         search_kwargs={"k": settings.TOP_K, 'namespace': settings.PINECONE_INDEX_NAMESPACE})
 
-# Step-7: reranker
+
+# STEP 8: Initialize CrossEncoder reranker
 
 
-def get_reranker(query: str, kb_docs):
+def get_reranker_model():
+    global _reranker
+    if _reranker is None:
+        _reranker = CrossEncoder(
+            model_name_or_path=settings.RERANKING_MODEL_NAME
+        )
+    return _reranker
+
+# STEP 9: Retrieve and rerank documents
+
+
+def rerank_documents(query: str, top_n: int):
+    # retrieve relevant documents using vector retriever
+    retriever = get_retriever()
+    kb_docs = retriever.invoke(query)
+    if not kb_docs:
+        return []
+
+    # gettin existing cross encoder model / reranking model
+    reranker_model = get_embedding_model()
+
+    # making pairs of query and kb_docs.content
+    pairs = [[query, doc.page_content] for doc in kb_docs]
+
+    # calculating relevance score using reranker_model
+    relevant_scores = reranker_model.invoke(pairs)
+
+    # combining reranker scores with the documents and extracting top_n
+    scored_docs = list(zip(kb_docs, relevant_scores))
+    print(scored_docs)
+
+    # sort by revevance score
+    scored_docs.sort(key=lambda x: x[1], reverse=True)
+
+    # return top_n documents
+    return [doc for doc, score in scored_docs[:top_n]]
