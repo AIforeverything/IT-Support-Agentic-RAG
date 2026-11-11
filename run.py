@@ -1,5 +1,5 @@
-from app.core.config import get_settings
+from app.rag.workflow import ask
 
-config = get_settings()
+answer = ask("what is langgraph?")
 
-print(config.APP_NAME)
+print(answer)
