@@ -1,15 +1,15 @@
 import yaml
 from pathlib import Path
-from langchain_core.prompts import PromptTemplate
 from app.rag.state import AgentState
+from functools import lru_cache
 
 PROMPT_FILE = Path(__file__).resolve().parent.parent / "prompts" / "prompts.yaml"
 
-
+@lru_cache
 def load_prompts():
     with open(PROMPT_FILE, "r", encoding="utf-8") as file:
-        data = yaml.safe_load(file)
-    return data
+        return yaml.safe_load(file)
+   
 
 
 def get_prompt(prompt_name: str):
@@ -25,14 +25,14 @@ def get_prompt_version(prompt_name: str):
     return data["prompts"][prompt_name]["version"]
 
 
-def loading_prompt_formatting_using_langchain(prompt_name: str, state: AgentState):
-    # step-1: loading prompt template
-    prompt_template = get_prompt(prompt_name)
-    # step-2: creating langchain prompt
-    langchain_prompt = PromptTemplate.from_template(template=prompt_template)
-    # step-3: insert user question
-    langchain_prompt_user_query = langchain_prompt.format(Query=state["query"])
-    return langchain_prompt_user_query
+# def loading_prompt_formatting_using_langchain(prompt_name: str, state: AgentState):
+#     # step-1: loading prompt template
+#     prompt_template = get_prompt(prompt_name)
+#     # step-2: creating langchain prompt
+#     langchain_prompt = PromptTemplate.from_template(template=prompt_template)
+#     # step-3: insert user question
+#     langchain_prompt_user_query = langchain_prompt.format(query=state["query"])
+#     return langchain_prompt_user_query
 
 
 if __name__ == "__main__":

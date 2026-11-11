@@ -1,5 +1,6 @@
 from app.rag.workflow import ask
 
-answer = ask("what is langgraph?")
+answer = ask(
+    "Hello, how are you?")
 
 print(answer)

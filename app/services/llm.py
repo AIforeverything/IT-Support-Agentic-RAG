@@ -16,7 +16,7 @@ def llm():
             raise RuntimeError("Groq API Key is missing.")
         _llm = ChatGroq(
             model=settings.GROQ_MODEL,
-            # api_key=settings.GROQ_API_KEY,
+            api_key=settings.GROQ_API_KEY,
             temperature=settings.TEMPERATURE,
         )
     return _llm
