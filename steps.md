@@ -38,14 +38,14 @@
 
 20. **`run.py`** — Create the final application entry point to start the FastAPI server.
 
-17. ** add in memory saver for chat history
+21. ** add in memory saver for chat history
 
-18. ** configure langsmith for observability 
+22. ** configure langsmith for observability 
 
-19. ** add guardrails
+23. ** add guardrails
 
-20. ** add evaluation
+24. ** add evaluation
 
-21. ** check 'run.py' again.
+25. ** check 'run.py' again.
 
 
