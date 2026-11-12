@@ -24,7 +24,8 @@ def health():
 def chat(payload: ChatRequest):
     try:
         result = ask(payload.question)
-        write_audit(payload.question, result["source_used"], result.get("trace", []))
+        write_audit(payload.question,
+                    result["source_used"], result.get("trace", []))
 
         return {
             "answer": result["answer"],
@@ -53,7 +54,9 @@ async def ingest(file: UploadFile = File(...), admin_key: str = Header(default="
     destination.write_bytes(await file.read())
     docs = load_file(destination)
     chunks = chunk_documents(docs)
+    print("Generated chunks:", len(chunks))
     ids = add_documents(chunks)
+    print("Inserted vectors:", len(ids))
     return {
         "message": "Document indexed",
         "file": destination.name,
