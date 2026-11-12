@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     MAX_RETRIES: int = 1
     TOP_K: int = 10
     TOP_N_RANKED: int = 3
-    ADMIN_API_KEY: str = "load"
+    ADMIN_API_KEY: str = ""
     AUDIT_DB_PATH: str = str(BASE_PATH / "data" / "audit.db")
     UPLOAD_DIR: str = str(BASE_PATH / "uploads")
     SAMPLE_KB_PATH: str = str(BASE_PATH / "data" / "sample_kb")

@@ -1,6 +1,4 @@
-from app.rag.workflow import ask
+import uvicorn
 
-answer = ask(
-    "Hello, how are you?")
-
-print(answer)
+if __name__ == "__main__":
+    uvicorn.run("app.main:app", host="127.0.0.1", port=8080, reload=True)
