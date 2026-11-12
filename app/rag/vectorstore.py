@@ -105,6 +105,7 @@ def get_vectorstore():
         _vectorstore = PineconeVectorStore(
             index=index,
             embedding=_embeddings,
+            namespace=settings.PINECONE_INDEX_NAMESPACE
         )
     return _vectorstore
 
@@ -122,7 +123,7 @@ def add_documents(chunks):
 
 def get_retriever():
     return get_vectorstore().as_retriever(
-        search_kwargs={"k": settings.TOP_K, 'namespace': settings.PINECONE_INDEX_NAMESPACE})
+        search_kwargs={"k": settings.TOP_K})
 
 
 # STEP 8: Initialize CrossEncoder reranker
@@ -140,27 +141,72 @@ def get_reranker_model():
 
 
 def rerank_documents(query: str, top_n: int):
-    # retrieve relevant documents using vector retriever
+
+    # Step 1: Retrieve documents from Pinecone
     retriever = get_retriever()
     kb_docs = retriever.invoke(query)
+
+    print(f"Retrieved documents from Pinecone: {len(kb_docs)}")
+
     if not kb_docs:
+        print("No documents found in Pinecone.")
         return []
 
-    # gettin existing cross encoder model / reranking model
-    reranker_model = get_embedding_model()
+    # Step 2: Remove exact duplicate chunks
+    unique_docs = []
+    seen = set()
 
-    # making pairs of query and kb_docs.content
-    pairs = [[query, doc.page_content] for doc in kb_docs]
+    for doc in kb_docs:
+        content = " ".join(doc.page_content.lower().split())
 
-    # calculating relevance score using reranker_model
-    relevant_scores = reranker_model.invoke(pairs)
+        if content not in seen:
+            seen.add(content)
+            unique_docs.append(doc)
 
-    # combining reranker scores with the documents and extracting top_n
-    scored_docs = list(zip(kb_docs, relevant_scores))
-    print(scored_docs)
+    print(f"Unique documents: {len(unique_docs)}")
 
-    # sort by revevance score
-    scored_docs.sort(key=lambda x: x[1], reverse=True)
+    # Step 3: Get the actual CrossEncoder reranker
+    reranker_model = get_reranker_model()
 
-    # return top_n documents
-    return [doc for doc, score in scored_docs[:top_n]]
+    # Step 4: Create query-document pairs
+    pairs = [
+        [query, doc.page_content]
+        for doc in unique_docs
+    ]
+
+    # Step 5: Calculate relevance scores
+    relevant_scores = reranker_model.predict(pairs)
+
+    # Step 6: Combine documents and scores
+    scored_docs = list(zip(unique_docs, relevant_scores))
+
+    # Step 7: Sort by relevance
+    scored_docs.sort(
+        key=lambda x: x[1],
+        reverse=True
+    )
+
+    # Step 8: Return top N documents
+    reranked_docs = [
+        doc for doc, score in scored_docs[:top_n]
+    ]
+
+    print(f"Final reranked documents: {len(reranked_docs)}")
+
+    return reranked_docs
+
+
+def check_pinecone_stats():
+
+    index = ensure_index()
+
+    stats = index.describe_index_stats()
+
+    print("\n========== PINECONE STATS ==========")
+    print(stats)
+
+    print("\nNamespace:", settings.PINECONE_INDEX_NAMESPACE)
+
+    print("===================================")
+
+    return stats

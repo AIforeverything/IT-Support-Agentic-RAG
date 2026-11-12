@@ -19,15 +19,20 @@ def load_file(path: Path) -> list[Document]:
     if suffix == ".docx":
         doc = Docxloader(str(path))
         text = "\n".join(p.text for p in doc.paragraphs if p.text.strip())
-        return [Document(page_content=text, metadata={"source", str(path)})]
+        return [
+            Document(
+                page_content=text,
+                metadata={"source": str(path)}
+            )
+        ]
     raise ValueError(f"Unsupported file type: {suffix}")
 
 
 def chunk_documents(docs: Iterable[Document]) -> list[Document]:
     # Optimized for all-MiniLM-L6-v2 (256 token limit)
     splitter = RecursiveCharacterTextSplitter(
-        chunk_size=600,
-        chunk_overlap=120,
+        chunk_size=500,
+        chunk_overlap=100,
         add_start_index=True,
         length_function=len,
         separators=[
