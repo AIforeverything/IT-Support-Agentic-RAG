@@ -6,6 +6,7 @@ from app.rag.workflow import ask
 from app.rag.vectorstore import add_documents
 from app.services.ingestion import load_file, chunk_documents, SUPPORTED
 from app.services.audit import write_audit
+from app.guardrails.input_guardrails import validate_input
 
 router = APIRouter(prefix="/api")
 settings = get_settings()
@@ -23,6 +24,13 @@ def health():
 @router.post("/chat")
 def chat(payload: ChatRequest):
     try:
+        valid, message = validate_input(payload.question)
+
+        if not valid:
+            raise HTTPException(
+                status_code=400,
+                detail=message
+            )
         result = ask(payload.question)
         write_audit(payload.question,
                     result["source_used"], result.get("trace", []))
@@ -39,8 +47,8 @@ def chat(payload: ChatRequest):
 
 
 @router.post("/ingest")
-async def ingest(file: UploadFile = File(...), admin_key: str = Header(default="")):
-    if admin_key != settings.ADMIN_API_KEY:
+async def ingest(file: UploadFile = File(...), x_admin_key: str = Header(default="")):
+    if x_admin_key != settings.ADMIN_API_KEY:
         raise HTTPException(status_code=401, detail="Invalid admin key.")
     suffix = Path(file.filename or "").suffix.lower()
     if suffix not in SUPPORTED:

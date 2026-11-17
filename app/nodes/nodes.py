@@ -4,11 +4,7 @@ from app.services.llm import llm
 from app.tools.tools import web_search_tool
 from app.rag.state import AgentState, DecisionRoute, GradingAnswer
 from app.rag.vectorstore import rerank_documents
-from app.core.prompt_loader import (
-    # loading_prompt_formatting_using_langchain,
-    get_prompt,
-    get_prompt_version,
-)
+from app.core.prompt_loader import get_prompt
 
 from app.core.config import get_settings
 
@@ -26,7 +22,8 @@ def route_question(state: AgentState):
 
     # loading the prompt from prompts.yaml
     prompt_name = "decision_router_prompt"
-    prompt = get_prompt(prompt_name)
+    version = "version_1.1.0"
+    prompt = get_prompt(prompt_name, version)
     formatted_prompt = prompt.format(query=state["query"])
     decision = router.invoke(formatted_prompt)
     return {
@@ -72,7 +69,8 @@ def grade_kb_evidence(state: AgentState):
     )
     # loading the prompt from prompts.yaml
     prompt_name = "kb_grader_prompt"
-    prompt = get_prompt(prompt_name)
+    version = "version_1.1.0"
+    prompt = get_prompt(prompt_name, version)
     formatted_prompt = prompt.format(
         query=state["current_query"], context=context)
     grade = kb_grader_llm.invoke(formatted_prompt)
@@ -126,14 +124,14 @@ def search_web(state: AgentState):
 
 # Node 5 — Grade Web Evidence
 def grade_web_evidence(state: AgentState):
-    # query = state["query"]
     web_results = state["web_results"]
     web_grader_llm = llm().with_structured_output(
         schema=GradingAnswer, method="json_schema"
     )
     # loading the prompt from prompts.yaml
     prompt_name = "web_grader_prompt"
-    prompt = get_prompt(prompt_name)
+    version = "version_1.1.0"
+    prompt = get_prompt(prompt_name, version)
     formatted_prompt = prompt.format(
         query=state["query"], web_results=web_results)
     grade = web_grader_llm.invoke(formatted_prompt)
@@ -157,10 +155,10 @@ def decide_after_web_grade(
 
 # Node 6 — Rewrite the Query
 def rewrite_query(state: AgentState):
-    # query = state["query"]
     retry_count = state["retry_count"] + 1
     prompt_name = "rewrite_query_prompt"
-    prompt = get_prompt(prompt_name)
+    version = "version_1.1.0"
+    prompt = get_prompt(prompt_name, version)
     formatted_prompt = prompt.format(query=state["query"])
     rewritten = llm().invoke(formatted_prompt)
     return {
@@ -172,14 +170,14 @@ def rewrite_query(state: AgentState):
 
 # Node 7 — Generate from Private KB
 def generate_from_kb(state: AgentState):
-    # query = state["query"]
     context = "\n\n".join(
         f"[kb_source: {doc.metadata.get('source')}]\n {doc.page_content}"
         for doc in state["kb_docs"]
     )
     # loading the prompt from prompts.yaml
     prompt_name = "generate_from_kb_prompt"
-    prompt = get_prompt(prompt_name)
+    version = "version_1.1.0"
+    prompt = get_prompt(prompt_name, version)
     formatted_prompt = prompt.format(query=state["query"], context=context)
     answer = llm().invoke(formatted_prompt)
 
@@ -202,11 +200,11 @@ def generate_from_kb(state: AgentState):
 
 # Node-8: Generate from web search
 def generate_from_web(state: AgentState):
-    # query = state["query"]
     web_results = state["web_results"]
     # loading the prompt from prompts.yaml
     prompt_name = "generate_from_web_prompt"
-    prompt = get_prompt(prompt_name)
+    version = "version_1.1.0"
+    prompt = get_prompt(prompt_name, version)
     formatted_prompt = prompt.format(
         query=state["query"], web_results=web_results)
     answer = llm().invoke(formatted_prompt)
@@ -222,7 +220,8 @@ def direct_answer(state: AgentState):
     # query = state["query"]
     # loading the prompt from prompts.yaml
     prompt_name = "direct_answer_prompt"
-    prompt = get_prompt(prompt_name)
+    version = "version_1.1.0"
+    prompt = get_prompt(prompt_name, version)
     formatted_prompt = prompt.format(query=state["query"])
     answer = llm().invoke(formatted_prompt)
     return {

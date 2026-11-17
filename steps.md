@@ -14,7 +14,7 @@
 
 8. **`app/rag/state.py`** — Define the LangGraph shared state containing the question, retrieved documents, grades, answer, retries, citations, and trace.
 
-9. **`app/prompts/prompts.yaml`- Make prompts.yaml containing all prompts for versioning
+9. **`app/prompts/prompts_against_promptInjection.yaml`- Make prompts_against_promptInjection.yaml containing all prompts for versioning
 
 10. **`app/core/prompt_loader.py` - make prompt_loader.py to load prompts
 
@@ -42,7 +42,11 @@
 
 22. ** configure langsmith for observability 
 
-23. ** add guardrails
+23. ** Protect against prompt injection using prompts
+
+23. **`app/guardrails/input_guardrails.py`**: add input guardrails
+
+24. 
 
 24. ** add evaluation
 
