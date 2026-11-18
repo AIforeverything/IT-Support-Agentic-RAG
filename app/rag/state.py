@@ -15,6 +15,13 @@ class GradingAnswer(BaseModel):
     )
 
 
+class OutputSafety(BaseModel):
+    safe: bool = Field(
+        description="Whether the generated answer is safe to show.")
+    reason: str = Field(
+        description="Brief reason for allowing or blocking the answer.")
+
+
 class AgentState(TypedDict):
     query: str
     current_query: str

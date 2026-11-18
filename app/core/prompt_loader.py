@@ -1,6 +1,9 @@
 import yaml
 from pathlib import Path
 from functools import lru_cache
+from app.core.config import get_settings
+
+settings= get_settings()
 
 PROMPT_FILE = Path(__file__).resolve().parent.parent / \
     "prompts" / "prompts_against_promptInjection.yaml"
@@ -12,7 +15,7 @@ def load_prompts():
         return yaml.safe_load(file)
 
 
-def get_prompt(prompt_name: str, version: str):
+def get_prompt(prompt_name: str, version: str=settings.PROMPT_VERSION):
     data = load_prompts()
     prompt_data = data["prompts"][prompt_name].get(version)
     if prompt_data is None:

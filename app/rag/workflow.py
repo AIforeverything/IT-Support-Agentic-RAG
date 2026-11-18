@@ -16,8 +16,8 @@ from app.nodes.nodes import (
     generate_from_web,
     direct_answer,
     answer_insufficient,
+    output_guardrails
 )
-from typing import List, Literal, TypedDict
 
 logger = configure_logging()
 settings = get_settings()
@@ -38,6 +38,7 @@ def build_graph():
         "generate_from_web": generate_from_web,
         "direct_answer": direct_answer,
         "answer_insufficient": answer_insufficient,
+        "output_guardrails": output_guardrails
     }.items():
         graph.add_node(node_name, function)
 
@@ -69,10 +70,12 @@ def build_graph():
 
     graph.add_edge("rewrite_query", "retrieve_kb")
 
-    graph.add_edge("generate_from_kb", END)
-    graph.add_edge("generate_from_web", END)
-    graph.add_edge("direct_answer", END)
-    graph.add_edge("direct_answer", END)
+    # adding output guardrails
+    graph.add_edge("generate_from_kb", "output_guardrails")
+    graph.add_edge("generate_from_web", "output_guardrails")
+    graph.add_edge("direct_answer", "output_guardrails")
+    graph.add_edge("answer_insufficient", "output_guardrails")
+    graph.add_edge("output_guardrails", END)
 
     return graph.compile()
 

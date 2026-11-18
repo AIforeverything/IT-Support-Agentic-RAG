@@ -2,7 +2,7 @@
 from typing import Literal
 from app.services.llm import llm
 from app.tools.tools import web_search_tool
-from app.rag.state import AgentState, DecisionRoute, GradingAnswer
+from app.rag.state import AgentState, DecisionRoute, GradingAnswer, OutputSafety
 from app.rag.vectorstore import rerank_documents
 from app.core.prompt_loader import get_prompt
 
@@ -22,8 +22,8 @@ def route_question(state: AgentState):
 
     # loading the prompt from prompts.yaml
     prompt_name = "decision_router_prompt"
-    version = "version_1.1.0"
-    prompt = get_prompt(prompt_name, version)
+
+    prompt = get_prompt(prompt_name)
     formatted_prompt = prompt.format(query=state["query"])
     decision = router.invoke(formatted_prompt)
     return {
@@ -69,8 +69,8 @@ def grade_kb_evidence(state: AgentState):
     )
     # loading the prompt from prompts.yaml
     prompt_name = "kb_grader_prompt"
-    version = "version_1.1.0"
-    prompt = get_prompt(prompt_name, version)
+
+    prompt = get_prompt(prompt_name)
     formatted_prompt = prompt.format(
         query=state["current_query"], context=context)
     grade = kb_grader_llm.invoke(formatted_prompt)
@@ -130,8 +130,8 @@ def grade_web_evidence(state: AgentState):
     )
     # loading the prompt from prompts.yaml
     prompt_name = "web_grader_prompt"
-    version = "version_1.1.0"
-    prompt = get_prompt(prompt_name, version)
+
+    prompt = get_prompt(prompt_name)
     formatted_prompt = prompt.format(
         query=state["query"], web_results=web_results)
     grade = web_grader_llm.invoke(formatted_prompt)
@@ -157,8 +157,8 @@ def decide_after_web_grade(
 def rewrite_query(state: AgentState):
     retry_count = state["retry_count"] + 1
     prompt_name = "rewrite_query_prompt"
-    version = "version_1.1.0"
-    prompt = get_prompt(prompt_name, version)
+
+    prompt = get_prompt(prompt_name)
     formatted_prompt = prompt.format(query=state["query"])
     rewritten = llm().invoke(formatted_prompt)
     return {
@@ -176,8 +176,8 @@ def generate_from_kb(state: AgentState):
     )
     # loading the prompt from prompts.yaml
     prompt_name = "generate_from_kb_prompt"
-    version = "version_1.1.0"
-    prompt = get_prompt(prompt_name, version)
+
+    prompt = get_prompt(prompt_name)
     formatted_prompt = prompt.format(query=state["query"], context=context)
     answer = llm().invoke(formatted_prompt)
 
@@ -203,8 +203,8 @@ def generate_from_web(state: AgentState):
     web_results = state["web_results"]
     # loading the prompt from prompts.yaml
     prompt_name = "generate_from_web_prompt"
-    version = "version_1.1.0"
-    prompt = get_prompt(prompt_name, version)
+
+    prompt = get_prompt(prompt_name)
     formatted_prompt = prompt.format(
         query=state["query"], web_results=web_results)
     answer = llm().invoke(formatted_prompt)
@@ -220,8 +220,8 @@ def direct_answer(state: AgentState):
     # query = state["query"]
     # loading the prompt from prompts.yaml
     prompt_name = "direct_answer_prompt"
-    version = "version_1.1.0"
-    prompt = get_prompt(prompt_name, version)
+
+    prompt = get_prompt(prompt_name)
     formatted_prompt = prompt.format(query=state["query"])
     answer = llm().invoke(formatted_prompt)
     return {
@@ -242,3 +242,51 @@ def answer_insufficient(state: AgentState):
         "source_used": "insufficient_evidence",
         "trace": add_trace(state, "Stopped → insufficient reliable evidence"),
     }
+
+
+# Node 11: Output Safety Guardrail
+def output_guardrails(state: AgentState):
+    query = state["query"]
+    answer = state.get("answer", "")
+
+    # blocking empty responses
+    if not answer or not answer.strip():
+        return {
+            "answer": "I could not generate a suitable response. Please try again.",
+            "source_used": "guardrail_blocked",
+            "trace": add_trace(state, "Output Guardrail -> BLOCKED: Empty response")
+        }
+    # loading output guardrail prompt
+    prompt_name = "output_guardrail_prompt"
+    prompt = get_prompt(prompt_name)
+    formatted_prompt = prompt.format(query=query, answer=answer)
+
+    # using the llm with structured output
+    safety_checker_llm = llm().with_structured_output(
+        schema=OutputSafety, method="json_schema")
+
+    try:
+        result = safety_checker_llm.invoke(formatted_prompt)
+
+        if not result.safe:
+            return {
+                "answer": ("I'm sorry, but I cannot provide that response "
+                           "because it may contain unsafe or inappropriate content. "
+                           "Please contact IT support for assistance."),
+                "source_used": "output_guardrails",
+                "citations": [],
+                "trace": add_trace(state, f"Output Guardrail -> BLOCKED: {result.reason}"),
+            }
+
+        return {
+            "trace": add_trace(state, f"Output Guardrail -> PASSED"),
+        }
+    except Exception as e:
+        # fail if safety validation cannot be completed
+        return {
+            "answer": ("I'm unable to validate this response right now. "
+                       "Please try again later or contact IT support."),
+            "source_used": "output_guardrails",
+            "citations": [],
+            "trace": add_trace(state, f"Output Guardrail -> VALIDATION ERROR:{type(e).__name__}"),
+        }

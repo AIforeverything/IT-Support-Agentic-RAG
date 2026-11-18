@@ -31,6 +31,8 @@ class Settings(BaseSettings):
     UPLOAD_DIR: str = str(BASE_PATH / "uploads")
     SAMPLE_KB_PATH: str = str(BASE_PATH / "data" / "sample_kb")
 
+    PROMPT_VERSION:str
+
     model_config = SettingsConfigDict(
         title="Enterprise IT Support Agentic RAG",
         env_file=str(BASE_PATH / ".env"),
