@@ -1,0 +1,346 @@
+Let's integrate **Opik step by step into your existing IT Support Agentic RAG project**, using only basic evaluation metrics.
+
+We will keep your existing architecture:
+
+- LangGraph for agent workflow.
+- LangChain for LLM and retrieval.
+- Groq for generation.
+- Pinecone for vector storage.
+- Hugging Face embeddings and CrossEncoder reranking.
+- Your existing 76-question NovaCore golden dataset.
+
+We won't introduce RAGAS or LangSmith into this evaluation pipeline.
+
+## **What we will build**
+
+**NovaCore IT Support Agent**
+
+Existing LangGraph workflow
+
+**Opik Dataset**
+
+Your existing golden questions and reference answers
+
+**Basic Evaluation Metrics**
+
+- Answer relevance
+- Answer correctness
+- Citation presence
+- Answer generation success
+
+**Opik Dashboard**
+
+Experiment results and comparisons
+
+We will implement this in six steps. Start with dataset import and a baseline evaluation before adding more advanced metrics.
+
+## **Step 1 — Create your Opik account and configure the project**
+
+1. Open [Opik](https://www.comet.com/opik/?utm_source=chatgpt.com).
+2. Sign up or log in.
+3. Create or select a workspace.
+4. Generate an API key from your Opik account settings.
+5. Note your workspace name.
+
+Install Opik in your existing virtual environment:
+
+```
+pip install -U opik
+```
+
+Add these settings to your project's `.env`:
+
+```
+OPIK_API_KEY=your_opik_api_key
+OPIK_WORKSPACE=your_workspace_name
+OPIK_PROJECT_NAME=it-support-agentic-rag
+```
+
+Do not remove your existing Groq, Pinecone, or Hugging Face settings.
+
+Create `evals/test_opik_connection.py`:
+
+```
+import osfrom dotenv import load_dotenvimport opikload_dotenv()client = opik.Opik(    api_key=os.getenv("OPIK_API_KEY"),    workspace=os.getenv("OPIK_WORKSPACE"),    project_name=os.getenv("OPIK_PROJECT_NAME"),)print("Opik client initialized successfully!")datasets = client.get_datasets(max_results=10)print("Available datasets:")for dataset in datasets:    print(dataset.name)
+```
+
+Run:
+
+```
+python -m evals.test_opik_connection
+```
+
+If it initializes successfully, proceed to Step 2.
+
+## **Step 2 — Import your existing golden dataset**
+
+We will use your JSON file as the source of truth:
+
+```
+evals/
+├── golden_dataset/
+│   ├── novacore_golden_dataset.json
+│   └── novacore_golden_dataset.csv
+├── test_opik_connection.py
+└── create_opik_dataset.py
+```
+
+Create `evals/create_opik_dataset.py`:
+
+```
+import jsonimport osfrom pathlib import Pathfrom dotenv import load_dotenvimport opikload_dotenv()BASE_DIR = Path(__file__).resolve().parent.parentJSON_PATH = (    BASE_DIR    / "evals"    / "golden_dataset"    / "novacore_golden_dataset.json")DATASET_NAME = "novacore_golden_dataset"PROJECT_NAME = os.getenv(    "OPIK_PROJECT_NAME",    "it-support-agentic-rag")def main():    client = opik.Opik(        workspace=os.getenv("OPIK_WORKSPACE"),        project_name=PROJECT_NAME,    )    with open(JSON_PATH, "r", encoding="utf-8") as file:        dataset_json = json.load(file)
+```
+
+Run:
+
+```
+python -m evals.create_opik_dataset
+```
+
+The dataset insertion API supports deduplication, so rerunning this script with unchanged examples should not create duplicate identical items. Opik automatically creates dataset versions when items are inserted.&#x20;
+
+[image](https://www.google.com/s2/favicons?domain=https://www.comet.com\&sz=32)
+
+Opik Documentation+1
+
+
+
+Verify the dataset in Opik under Evaluation → Datasets. You should see your test questions and reference answers.
+
+## **Step 3 — Connect your existing LangGraph agent to Opik**
+
+Your `workflow.py` already has:
+
+```
+agent_graph = build_graph()
+```
+
+We can add tracing without changing your nodes, state, or graph edges.
+
+Add this import near the top of `app/rag/workflow.py`:
+
+```
+from opik.integrations.langchain import OpikTracer, track_langgraph
+```
+
+Then replace:
+
+```
+agent_graph = build_graph()
+```
+
+with:
+
+```
+agent_graph = build_graph()opik_tracer = OpikTracer(    project_name="it-support-agentic-rag")agent_graph = track_langgraph(    agent_graph,    opik_tracer)
+```
+
+Keep your existing `ask()` function unchanged.
+
+Now every call to:
+
+```
+result = ask("What is the employee leave policy?")
+```
+
+will be traced by Opik.
+
+You can inspect the graph execution and node activity in the Opik dashboard. This is the documented recommended integration for LangGraph.&#x20;
+
+[image](https://www.google.com/s2/favicons?domain=https://www.comet.com\&sz=32)
+
+Opik Documentation
+
+
+
+**Test this before proceeding:** run your FastAPI application or a small script that calls `ask()` once. Open Opik → your project → Traces and check whether the execution appears.
+
+## **Step 4 — Configure basic evaluation metrics**
+
+For your first evaluation, I recommend just two built-in metrics:
+
+**1. Answer Relevance**
+
+Higher is better
+
+Measures whether the generated answer addresses the question.
+
+Score: 0.0 to 1.0
+
+**2. Hallucination**
+
+Lower is better
+
+Checks whether the generated answer contains claims unsupported by the retrieved context.
+
+Score: 0.0 means no hallucination detected; 1.0 means hallucination detected.
+
+These metrics are available directly in `opik.evaluation.metrics`.&#x20;
+
+[image](https://www.google.com/s2/favicons?domain=https://www.comet.com\&sz=32)
+
+Opik Documentation+2
+
+
+
+### **Configure Groq as the evaluation judge**
+
+The metrics use an LLM judge. Since you already use Groq, we can try Groq rather than introduce another provider.
+
+Install LiteLLM:
+
+```
+pip install -U litellm
+```
+
+Add your existing Groq API key under the environment variable LiteLLM expects:
+
+```
+GROQ_API_KEY=your_existing_groq_api_key
+```
+
+Use a Groq model supported by LiteLLM, for example:
+
+```
+JUDGE_MODEL = "groq/llama-3.3-70b-versatile"
+```
+
+The Opik metrics accept a LiteLLM-compatible model name.&#x20;
+
+[image](https://www.google.com/s2/favicons?domain=https://www.comet.com\&sz=32)
+
+opik+1
+
+
+
+If Groq no longer offers that model to your account, substitute a currently available Groq model. This judge model is separate from the model used by your agent.
+
+## **Step 5 — Create your evaluation runner**
+
+Create:
+
+```
+evals/run_opik_evaluation.py
+```
+
+Use this code, adapted to your actual `ask()` function and `AgentState`:
+
+```
+import osfrom dotenv import load_dotenvimport opikfrom opik.evaluation import evaluatefrom opik.evaluation.metrics import (    AnswerRelevance,    Hallucination,)from app.rag.workflow import askload_dotenv()DATASET_NAME = "novacore_golden_dataset"PROJECT_NAME = os.getenv(    "OPIK_PROJECT_NAME",    "it-support-agentic-rag")# LiteLLM-compatible Groq modelJUDGE_MODEL = "groq/llama-3.3-70b-versatile"def target(dataset_item: dict) -> dict:    """Run one golden question through the existing agent."""    question = dataset_item["question"]    result = ask(question)    # Collect actual retrieved KB documents.    kb_docs = result.get("kb_docs") or []
+```
+
+Run it from your project root:
+
+```
+python -m evals.run_opik_evaluation
+```
+
+The runner follows Opik's current Python evaluation API: `evaluate(dataset=..., task=..., scoring_metrics=...)`.&#x20;
+
+[image](https://www.google.com/s2/favicons?domain=https://www.comet.com\&sz=32)
+
+opik+1
+
+
+
+**Important limitations of this first evaluation:**
+
+- `AnswerRelevance` checks relevance, not whether the answer matches your golden reference answer.
+- `Hallucination` checks the answer against the supplied context; it is not a complete factual correctness test.
+- `reference_answer` is returned by the task for future evaluators, but these two metrics do not use it.
+- For direct-answer cases, the context may be empty. Relevance still works because we set `require_context=False`; hallucination then evaluates the answer without retrieved evidence.
+
+Run all 76 examples initially with `task_threads=1`. This avoids running many Groq calls simultaneously.
+
+## **Step 6 — View your evaluation results**
+
+After the runner finishes:
+
+1. Open [Opik Dashboard](https://www.comet.com/opik/?utm_source=chatgpt.com).
+2. Select your workspace.
+3. Open the `it-support-agentic-rag` project.
+4. Navigate to **Experiments**.
+5. Open `novacore-basic-evaluation`.
+
+You should be able to inspect:
+
+- Each golden question.
+- The agent's generated answer.
+- The retrieved context.
+- Answer relevance score.
+- Hallucination score.
+- Aggregate experiment results.
+
+## **What metrics should you keep for your project?**
+
+I recommend starting with these four. The first two are Opik's built-in LLM metrics; the last two are simple Python checks.
+
+| Metric            | Type         | Desired result                   |
+| ----------------- | ------------ | -------------------------------- |
+| Answer relevance  | LLM judge    | High                             |
+| Hallucination     | LLM judge    | Low                              |
+| Answer presence   | Python check | 100%                             |
+| Citation presence | Python check | High for KB-answerable questions |
+
+You can add the Python checks after the first evaluation works. Don't complicate the first run.
+
+## **Your final project folder**
+
+```
+
+IT-Support-Agentic-RAG/
+│
+├── app/
+│   ├── rag/
+│   │   ├── workflow.py
+│   │   └── state.py
+│   └── nodes/
+│       └── nodes.py
+│
+├── evals/
+│   ├── golden_dataset/
+│   │   ├── novacore_golden_dataset.json
+│   │   └── novacore_golden_dataset.csv
+│   │
+│   ├── test_opik_connection.py
+│   ├── create_opik_dataset.py
+│   └── run_opik_evaluation.py
+│
+└── .env
+
+```
+
+## **Implementation checklist**
+
+**Your setup progress**
+
+0/8
+
+Create Opik account and API key
+
+Configure OPIK_API_KEY and workspace in .env
+
+Install opik
+
+Verify Opik connection
+
+Upload the golden JSON dataset
+
+Enable LangGraph tracing
+
+Run the two basic evaluation metrics
+
+Inspect experiment results in Opik
+
+**My suggestion:** Complete Steps 1 and 2 first. Confirm that your dataset appears in Opik before modifying `workflow.py`. Then add tracing and run the evaluation.
+
+One thing to remember: your golden dataset includes answerable, evidence-gap, out-of-document, and prompt-injection cases. The two built-in metrics are a starting point, not a complete safety evaluation.
+
+Official guides:
+
+- [Evaluate your agent](https://www.comet.com/docs/opik/evaluation/advanced/evaluate_your_llm?from=llm\&utm_cdata-removed-handler=eval_link\&utm_source=chatgpt.com)
+- [Manage datasets](https://www.comet.com/docs/opik/evaluation/advanced/manage_datasets?utm_source=chatgpt.com)
+- [Opik evaluation metrics](https://www.comet.com/docs/opik/python-sdk-reference/evaluation/metrics/index.html?utm_source=chatgpt.com)
+- [LangGraph tracing with Opik](https://www.comet.com/docs/opik/integrations/langgraph?utm_source=chatgpt.com)
+
+If you encounter an error, share the traceback and I can adapt the code to your installed Opik SDK version.

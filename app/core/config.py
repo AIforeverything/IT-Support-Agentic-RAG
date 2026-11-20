@@ -33,6 +33,10 @@ class Settings(BaseSettings):
 
     PROMPT_VERSION: str
 
+    OPIK_API_KEY:str
+    OPIK_WORKSPACE:str
+    OPIK_PROJECT_NAME:str
+
     model_config = SettingsConfigDict(
         title="Enterprise IT Support Agentic RAG",
         env_file=str(BASE_PATH / ".env"),
