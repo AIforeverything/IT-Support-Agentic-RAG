@@ -34,7 +34,9 @@ pyyaml==6.0.3
 
 # observability nad evaluation
 langsmith==0.14.0
-deepevals==0.2.0
+deepeval==4.3.4
+litellm
+#LiteLLM is a Python library that provides a unified interface to call different LLM providers using a common API.
 # opik==2.2.152
 # opik
 

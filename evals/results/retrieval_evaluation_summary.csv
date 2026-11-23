@@ -1,0 +1,3 @@
+metric,average_score,successful_evaluations,total_queries
+Contextual Recall,0.9841269841269841,63,65
+Contextual Precision,0.9973544973544974,63,65

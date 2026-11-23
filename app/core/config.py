@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     APP_ENV: str = "Development"
     HUGGINGFACE_API_KEY: str = ""  # not mandatory, because str = ''
     GEMINI_API_KEY: str = ""
+    GEMINI_MODEL: str = " "
     GROQ_API_KEY: str
     GROQ_MODEL: str  # required, otherwise pydantic throws an error
     LANGSMITH_API_KEY: str = ""
@@ -19,6 +20,8 @@ class Settings(BaseSettings):
 
     EMBEDDING_MODEL_NAME: str  # required
     RERANKING_MODEL_NAME: str  # required
+    CHUNK_SIZE: int = 500
+    CHUNK_OVERLAP: int = 100
     PINECONE_API_KEY: str  # required
     PINECONE_INDEX_NAME: str  # required
     PINECONE_INDEX_NAMESPACE: str  # required

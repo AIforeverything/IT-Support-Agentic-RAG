@@ -16,13 +16,14 @@ from app.nodes.nodes import (
     generate_from_web,
     direct_answer,
     answer_insufficient,
-    output_guardrails
+    output_guardrails,
 )
 
 logger = configure_logging()
 settings = get_settings()
 
 from opik.integrations.langchain import OpikTracer, track_langgraph
+
 
 def build_graph():
     graph = StateGraph(state_schema=AgentState)
@@ -39,7 +40,7 @@ def build_graph():
         "generate_from_web": generate_from_web,
         "direct_answer": direct_answer,
         "answer_insufficient": answer_insufficient,
-        "output_guardrails": output_guardrails
+        "output_guardrails": output_guardrails,
     }.items():
         graph.add_node(node_name, function)
 
@@ -83,15 +84,14 @@ def build_graph():
 
 agent_graph = build_graph()
 
-# integrating opik tracing
-opik_tracer= OpikTracer(
-    project_name=settings.OPIK_PROJECT_NAME
-)
-agent_graph=track_langgraph(
-    graph=agent_graph,
-    opik_tracer=opik_tracer
-)
-
+# # integrating opik tracing
+# opik_tracer= OpikTracer(
+#     project_name=settings.OPIK_PROJECT_NAME
+# )
+# agent_graph=track_langgraph(
+#     graph=agent_graph,
+#     opik_tracer=opik_tracer
+# )
 
 
 def ask(question: str):

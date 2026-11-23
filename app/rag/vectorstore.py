@@ -100,12 +100,11 @@ def get_vectorstore():
 
     if _vectorstore is None:
         print("Loading CrossEncoder model...")
-        embedding_model = get_embedding_model()
         index = ensure_index()
         _vectorstore = PineconeVectorStore(
             index=index,
             embedding=_embeddings,
-            namespace=settings.PINECONE_INDEX_NAMESPACE
+            namespace=settings.PINECONE_INDEX_NAMESPACE,
         )
     return _vectorstore
 
@@ -122,8 +121,7 @@ def add_documents(chunks):
 
 
 def get_retriever():
-    return get_vectorstore().as_retriever(
-        search_kwargs={"k": settings.TOP_K})
+    return get_vectorstore().as_retriever(search_kwargs={"k": settings.TOP_K})
 
 
 # STEP 8: Initialize CrossEncoder reranker
@@ -132,10 +130,9 @@ def get_retriever():
 def get_reranker_model():
     global _reranker
     if _reranker is None:
-        _reranker = CrossEncoder(
-            model_name_or_path=settings.RERANKING_MODEL_NAME
-        )
+        _reranker = CrossEncoder(model_name_or_path=settings.RERANKING_MODEL_NAME)
     return _reranker
+
 
 # STEP 9: Retrieve and rerank documents
 
@@ -169,10 +166,7 @@ def rerank_documents(query: str, top_n: int):
     reranker_model = get_reranker_model()
 
     # Step 4: Create query-document pairs
-    pairs = [
-        [query, doc.page_content]
-        for doc in unique_docs
-    ]
+    pairs = [[query, doc.page_content] for doc in unique_docs]
 
     # Step 5: Calculate relevance scores
     relevant_scores = reranker_model.predict(pairs)
@@ -181,15 +175,10 @@ def rerank_documents(query: str, top_n: int):
     scored_docs = list(zip(unique_docs, relevant_scores))
 
     # Step 7: Sort by relevance
-    scored_docs.sort(
-        key=lambda x: x[1],
-        reverse=True
-    )
+    scored_docs.sort(key=lambda x: x[1], reverse=True)
 
     # Step 8: Return top N documents
-    reranked_docs = [
-        doc for doc, score in scored_docs[:top_n]
-    ]
+    reranked_docs = [doc for doc, score in scored_docs[:top_n]]
 
     print(f"Final reranked documents: {len(reranked_docs)}")
 

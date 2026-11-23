@@ -22,5 +22,17 @@ def llm():
     return _llm
 
 
+# import litellm
+
+# response = litellm.completion(
+#     model="gemini/gemini-2.5-flash",
+#     messages=[
+#         {"role": "user", "content": "Evaluate this retrieved context."}
+#     ],
+#     api_key="YOUR_GEMINI_API_KEY"
+# )
+
+# print(response.choices[0].message.content)
+
 if __name__ == "__main__":
     llm()
