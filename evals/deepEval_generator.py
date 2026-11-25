@@ -12,13 +12,14 @@ is purely the generator's fault --- the context was already correct.
 
     python -m evals.eval_generator
 """
+
 import json
 from pathlib import Path
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 
 from app.core.config import get_settings
-from app.services import llm
+from app.services.llm import llm
 from evals.gemini_judge import GeminiJudge
 
 from deepeval.test_case import LLMTestCase
@@ -27,25 +28,27 @@ from deepeval import evaluate
 
 # loading the prompt from prompts.yaml
 from app.core.prompt_loader import get_prompt
+
 prompt_name = "faithfullness_prompt"
 prompt_yaml = get_prompt(prompt_name)
 
 # loading the golden dataset
 BASE_DIR = Path(__file__).resolve().parent
-GOLDEN_DATASET = (BASE_DIR / "golden_dataset" /
-                  "novacore_faithfulness_answer_relevancy_golden_dataset_v2.json")
-with open(GOLDEN_DATASET, 'r', encoding='utf-8') as f:
+GOLDEN_DATASET = (
+    BASE_DIR
+    / "golden_dataset"
+    / "novacore_faithfulness_answer_relevancy_golden_dataset_v2.json"
+)
+with open(GOLDEN_DATASET, "r", encoding="utf-8") as f:
     goldens = json.load(f)
 
-llm = llm()
+LLM = llm()
 settings = get_settings()
 
 # faithfulness-first prompt: ground every claim in the context, abstain if unsure
-prompt = ChatPromptTemplate.from_template(
-    prompt_yaml
-)
+prompt = ChatPromptTemplate.from_template(prompt_yaml)
 
-chain = prompt | llm | StrOutputParser()
+chain = prompt | LLM | StrOutputParser()
 
 
 def generate(query: str, context: list[str]) -> str:
@@ -54,14 +57,6 @@ def generate(query: str, context: list[str]) -> str:
     return chain.invoke({"question": query, "context": context_text})
 
 
-def generate_stream(query: str, context: list[str]):
-    context_text = "\n\n".join(context)
-    for chunk in chain.stream({query: str, context: list[str]}):
-        if chunk:
-            yield chunk
-
-
-# quick manual test: python src/generator.py
 if __name__ == "__main__":
     ctx = [
         "Online eval means evaluating your system on live production traffic "
@@ -70,9 +65,3 @@ if __name__ == "__main__":
 
     # non-streaming
     print(generate("what is online eval?", ctx))
-
-    # streaming (prints tokens as they arrive)
-    print("\n--- streaming ---")
-    for piece in generate_stream("what is online eval?", ctx):
-        print(piece, end="", flush=True)
-    print()

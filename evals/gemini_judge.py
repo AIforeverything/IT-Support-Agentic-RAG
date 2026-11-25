@@ -22,6 +22,7 @@ class GeminiJudge(DeepEvalBaseLLM):
             response = self.client.models.generate_content(
                 model=self.model_name,
                 contents=prompt,
+                settings = get_settings()
                 config={
                     "response_mime_type": "application/json",
                     "response_schema": schema,
