@@ -9,12 +9,12 @@ BASE_PATH = Path(__file__).resolve().parents[2]
 class Settings(BaseSettings):
     APP_NAME: str = "Enterprise IT Support Agentic RAG"
     APP_ENV: str = "Development"
-    HUGGINGFACE_API_KEY: str = ""  # not mandatory, because str = ''
-    GEMINI_API_KEY: str = ""
+    HUGGINGFACE_API_KEY: str  # not mandatory, because str = ''
+    GEMINI_API_KEY: str = " "
     GEMINI_MODEL: str = " "
     GROQ_API_KEY: str
     GROQ_MODEL: str  # required, otherwise pydantic throws an error
-    LANGSMITH_API_KEY: str = ""
+    LANGSMITH_API_KEY: str = " "
     TAVILY_API_KEY: str  # required
     TEMPERATURE: float = 0
 
@@ -34,11 +34,11 @@ class Settings(BaseSettings):
     UPLOAD_DIR: str = str(BASE_PATH / "uploads")
     SAMPLE_KB_PATH: str = str(BASE_PATH / "data" / "sample_kb")
 
-    PROMPT_VERSION: str
+    PROMPT_VERSION: str = "1.0.0"
 
-    OPIK_API_KEY: str
-    OPIK_WORKSPACE: str
-    OPIK_PROJECT_NAME: str
+    # OPIK_API_KEY: str= ""
+    # OPIK_WORKSPACE: str= ""
+    # OPIK_PROJECT_NAME: str= ""
 
     model_config = SettingsConfigDict(
         title="Enterprise IT Support Agentic RAG",

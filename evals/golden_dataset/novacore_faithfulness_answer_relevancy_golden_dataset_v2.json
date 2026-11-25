@@ -1,0 +1,847 @@
+[
+  {
+    "id": "NC-FA-001",
+    "query": "What kind of company is NovaCore Technologies?",
+    "ideal_context": [
+      "NovaCore is a software and cloud engineering company building digital platforms, data products, and AI-powered enterprise solutions."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 1
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-002",
+    "query": "Which industries does NovaCore serve?",
+    "ideal_context": [
+      "Financial services, retail, logistics, education, and technology."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 1
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-003",
+    "query": "Where is NovaCore headquartered?",
+    "ideal_context": [
+      "Bengaluru, India."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 1
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-004",
+    "query": "When was NovaCore founded?",
+    "ideal_context": [
+      "2019."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 1
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-005",
+    "query": "Approximately how many employees does NovaCore have?",
+    "ideal_context": [
+      "Approximately 420 employees."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 1
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-006",
+    "query": "What are NovaCore's primary business areas?",
+    "ideal_context": [
+      "Cloud platforms, data engineering, AI systems, and enterprise software."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 1
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-007",
+    "query": "What is NovaCore's mission?",
+    "ideal_context": [
+      "To help organizations build reliable, secure, and useful digital products."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 1
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-008",
+    "query": "Which values does NovaCore emphasize?",
+    "ideal_context": [
+      "Customer impact, engineering quality, responsible AI, continuous learning, clear communication, and operational ownership."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 1
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-009",
+    "query": "What does the Engineering department handle?",
+    "ideal_context": [
+      "Backend, frontend, platform engineering, reliability, and internal tools."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 1
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-010",
+    "query": "What does the AI & Data department handle?",
+    "ideal_context": [
+      "Machine learning, LLM applications, analytics, data platforms, and evaluation."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 1
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-011",
+    "query": "Which department handles product strategy and roadmap planning?",
+    "ideal_context": [
+      "Product handles product strategy, research, requirements, and roadmap planning."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 1
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-012",
+    "query": "What are the responsibilities of Sales?",
+    "ideal_context": [
+      "Enterprise sales, partnerships, account growth, and customer relationships."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 1
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-013",
+    "query": "What does Customer Success handle?",
+    "ideal_context": [
+      "Onboarding, support, adoption, and customer training."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 1
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-014",
+    "query": "Which department manages budgeting and payroll?",
+    "ideal_context": [
+      "Finance & Operations handles budgeting, procurement, payroll, legal operations, and administration."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 1
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-015",
+    "query": "How many paid leave days do full-time employees receive annually?",
+    "ideal_context": [
+      "25 paid leave days per calendar year."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 2
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-016",
+    "query": "How is leave allocated to employees joining after July 1?",
+    "ideal_context": [
+      "They receive a prorated allocation."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 2
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-017",
+    "query": "How many unused leave days may be carried forward?",
+    "ideal_context": [
+      "Up to 5 unused leave days."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 2
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-018",
+    "query": "How many paid sick days are provided each year?",
+    "ideal_context": [
+      "10 paid sick days."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 2
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-019",
+    "query": "How early should planned leave be submitted?",
+    "ideal_context": [
+      "At least 7 calendar days in advance through the HR portal."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 2
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-020",
+    "query": "Who approves planned leave?",
+    "ideal_context": [
+      "The employee's direct manager."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 2
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-021",
+    "query": "What is the Engineering annual learning budget?",
+    "ideal_context": [
+      "$1,500."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 2
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-022",
+    "query": "What is the AI and Data annual learning budget?",
+    "ideal_context": [
+      "$2,000."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 2
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-023",
+    "query": "What is the Sales annual learning budget?",
+    "ideal_context": [
+      "$700."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 2
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-024",
+    "query": "Which expenses are eligible for learning and development reimbursement?",
+    "ideal_context": [
+      "Courses, books, technical certifications, and professional conferences."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 2
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-025",
+    "query": "How many days per week may employees work remotely?",
+    "ideal_context": [
+      "Up to three days per week."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 2
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-026",
+    "query": "Can teams set common office days?",
+    "ideal_context": [
+      "Yes, teams may designate common office days for collaboration."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 2
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-027",
+    "query": "Who approves fully remote arrangements?",
+    "ideal_context": [
+      "Both the department head and Human Resources."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 2
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-028",
+    "query": "What is the monthly home internet expense limit?",
+    "ideal_context": [
+      "Up to $50 per month for work-related home internet."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 2
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-029",
+    "query": "What equipment allowance can a new full-time employee request?",
+    "ideal_context": [
+      "A one-time home-office equipment allowance of up to $600."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 2
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-030",
+    "query": "What is the P95 API latency target?",
+    "ideal_context": [
+      "Below 250 milliseconds during normal operating conditions."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 2
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-031",
+    "query": "What is the monthly availability objective for customer-facing APIs?",
+    "ideal_context": [
+      "99.95%."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 2
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-032",
+    "query": "What are the production incident severity levels?",
+    "ideal_context": [
+      "SEV-1, SEV-2, and SEV-3."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 2
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-033",
+    "query": "Who must be notified immediately for a SEV-1 incident?",
+    "ideal_context": [
+      "The on-call engineer and incident commander."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 2
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-034",
+    "query": "What is the initial acknowledgement target for SEV-1 incidents?",
+    "ideal_context": [
+      "5 minutes."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 2
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-035",
+    "query": "What does ERR_CONN_8421 indicate?",
+    "ideal_context": [
+      "The primary database connection pool is exhausted."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 2
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-036",
+    "query": "Which team had the highest Q2 cloud cost?",
+    "ideal_context": [
+      "The AI team, at $145,000."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 3
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-037",
+    "query": "What was the Platform team's Q2 cloud cost?",
+    "ideal_context": [
+      "$120,000."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 3
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-038",
+    "query": "What was the Data team's Q2 cloud cost?",
+    "ideal_context": [
+      "$82,000."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 3
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-039",
+    "query": "What was the Security team's Q2 cloud cost?",
+    "ideal_context": [
+      "$64,000."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 3
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-040",
+    "query": "How much higher was AI's Q2 cloud cost than Data's?",
+    "ideal_context": [
+      "$63,000 higher: $145,000 compared with $82,000."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 3
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-041",
+    "query": "Within what period can an enterprise customer request a duplicate-charge refund?",
+    "ideal_context": [
+      "Within 30 calendar days of the invoice date."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 3
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-042",
+    "query": "How long do approved duplicate-charge refunds normally take?",
+    "ideal_context": [
+      "5 to 7 business days to the original payment method."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 3
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-043",
+    "query": "Are consumed usage-based infrastructure charges refundable?",
+    "ideal_context": [
+      "They are non-refundable except where required by law or explicitly approved by Finance."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 3
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-044",
+    "query": "When was payment-service release 4.8 deployed?",
+    "ideal_context": [
+      "During the week of August 17, 2026."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 3
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-045",
+    "query": "What changes were introduced in checkout release 4.8?",
+    "ideal_context": [
+      "A new fraud-scoring call was added and the default database connection-pool configuration was changed."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 3
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-046",
+    "query": "When was the connection-pool configuration rolled back?",
+    "ideal_context": [
+      "August 20, 2026."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 3
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-047",
+    "query": "What caused the checkout slowdown?",
+    "ideal_context": [
+      "Connection-pool contention was identified as the primary cause."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 3
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-048",
+    "query": "What device policy applies to internal system access?",
+    "ideal_context": [
+      "Employees must use company-approved devices."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 3
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-049",
+    "query": "What encryption requirement applies to devices?",
+    "ideal_context": [
+      "Disk encryption is required."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 3
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-050",
+    "query": "Is multi-factor authentication mandatory?",
+    "ideal_context": [
+      "Yes, multi-factor authentication must be enabled."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 3
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-051",
+    "query": "How must restricted internal systems be accessed?",
+    "ideal_context": [
+      "Through the corporate VPN."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 3
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-052",
+    "query": "How is executive compensation data classified?",
+    "ideal_context": [
+      "It is confidential."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 3
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-053",
+    "query": "Who may access Engineering runbooks?",
+    "ideal_context": [
+      "Authorized Engineering personnel only."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 3
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-054",
+    "query": "What priority categories are used for support tickets?",
+    "ideal_context": [
+      "Critical, High, Normal, and Low."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 3
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-055",
+    "query": "What is the acknowledgement target for critical production-impacting issues?",
+    "ideal_context": [
+      "Within 15 minutes."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 3
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-056",
+    "query": "What is the initial response target for normal support requests?",
+    "ideal_context": [
+      "Within one business day."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 3
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-057",
+    "query": "What are the API availability and latency objectives?",
+    "ideal_context": [
+      "99.95% monthly availability and P95 latency below 250 milliseconds during normal operating conditions."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 2
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-058",
+    "query": "Which department handles machine learning and LLM applications?",
+    "ideal_context": [
+      "AI & Data."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 1
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-059",
+    "query": "What is the standard remote-work allowance and fully remote approval requirement?",
+    "ideal_context": [
+      "Up to three remote days per week; fully remote arrangements require department head and Human Resources approval."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 2
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-060",
+    "query": "What are the annual paid leave and sick leave entitlements?",
+    "ideal_context": [
+      "25 paid leave days per calendar year and 10 paid sick days each year."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 2
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-061",
+    "query": "Compare Engineering, AI and Data, and Sales learning budgets.",
+    "ideal_context": [
+      "Engineering: $1,500; AI and Data: $2,000; Sales: $700 annually."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 2
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-062",
+    "query": "What happened after release 4.8 and what cause did the review identify?",
+    "ideal_context": [
+      "Checkout latency increased after release 4.8. The connection-pool configuration was rolled back on August 20, 2026; connection-pool contention was identified as the primary cause."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 3
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-063",
+    "query": "What security controls are required for restricted internal system access?",
+    "ideal_context": [
+      "Company-approved devices, disk encryption, multi-factor authentication, and corporate VPN access."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 3
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-064",
+    "query": "What are the response targets for Critical and Normal support tickets?",
+    "ideal_context": [
+      "Critical production-impacting issues: acknowledgement within 15 minutes. Normal requests: initial response within one business day."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 3
+      }
+    ]
+  },
+  {
+    "id": "NC-FA-065",
+    "query": "List the Q2 cloud costs for AI, Platform, Data, and Security.",
+    "ideal_context": [
+      "AI: $145,000; Platform: $120,000; Data: $82,000; Security: $64,000."
+    ],
+    "source": [
+      {
+        "document": "novacore_company_information.pdf",
+        "page": 3
+      }
+    ]
+  }
+]
