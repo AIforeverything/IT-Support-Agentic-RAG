@@ -1,5 +1,6 @@
 import asyncio
 import json
+from app.core.config import get_settings
 
 from google import genai
 from deepeval.models import DeepEvalBaseLLM
@@ -22,7 +23,7 @@ class GeminiJudge(DeepEvalBaseLLM):
             response = self.client.models.generate_content(
                 model=self.model_name,
                 contents=prompt,
-                settings = get_settings()
+                settings=get_settings(),
                 config={
                     "response_mime_type": "application/json",
                     "response_schema": schema,

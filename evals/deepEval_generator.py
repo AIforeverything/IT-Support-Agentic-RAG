@@ -12,56 +12,68 @@ is purely the generator's fault --- the context was already correct.
 
     python -m evals.eval_generator
 """
-
-import json
+import time
 from pathlib import Path
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.output_parsers import StrOutputParser
-
-from app.core.config import get_settings
-from app.services.llm import llm
+from evals.harness import load_golden, summarize_by_metric, print_summary
+from evals.llm_generator import generate
 from evals.gemini_judge import GeminiJudge
+from evals.groq_judge import GroqJudge
 
 from deepeval.test_case import LLMTestCase
 from deepeval.metrics import FaithfulnessMetric, AnswerRelevancyMetric
 from deepeval import evaluate
+THRESHOLD = 0.7
 
-# loading the prompt from prompts.yaml
-from app.core.prompt_loader import get_prompt
+DELAY_SECONDS = 1
 
-prompt_name = "faithfullness_prompt"
-prompt_yaml = get_prompt(prompt_name)
-
-# loading the golden dataset
-BASE_DIR = Path(__file__).resolve().parent
-GOLDEN_DATASET = (
-    BASE_DIR
-    / "golden_dataset"
-    / "novacore_faithfulness_answer_relevancy_golden_dataset_v2.json"
-)
-with open(GOLDEN_DATASET, "r", encoding="utf-8") as f:
-    goldens = json.load(f)
-
-LLM = llm()
-settings = get_settings()
-
-# faithfulness-first prompt: ground every claim in the context, abstain if unsure
-prompt = ChatPromptTemplate.from_template(prompt_yaml)
-
-chain = prompt | LLM | StrOutputParser()
+BASE_DIR = Path(__file__).resolve().parent.parent
+FILE_PATH = BASE_DIR/"evals"/"golden_dataset" / \
+    "novacore_faithfulness_answer_relevancy_golden_dataset_v2.json"
 
 
-def generate(query: str, context: list[str]) -> str:
-    """Generate a grounded answer from the query and context chunks."""
-    context_text = "\n\n".join(context)
-    return chain.invoke({"question": query, "context": context_text})
+def run():
+    # Step-1: Loading faithfulness golden dataset
+    goldens = load_golden(FILE_PATH)
+    # print(dataset)
+    answers = []
+    # Step-2: RUN THE GENERATOR on the GOLDEN context (isolation), build one test case each
+    test_cases = []
+    i = 1
+    for g in goldens:
+        query = g["query"]
+        context = g["ideal_context"]  # known good context
+        # we get the generated output
+        answer = generate(query=query, context=context)
+        time.sleep(DELAY_SECONDS)
+        test_cases.append(
+            LLMTestCase(
+                input=query,
+                actual_output=answer,      # generated answer we are judging
+                retrieval_context=context,  # faithfulness checks the answer aginst this context
+            )
+        )
+        print(f"answer-{i}: ", answer[:10])
+        i = i+1
+        answers.append(answer)
+
+    # 3. THE METRICS --- decompose actual_output into claims, attribute each to context
+    metrics = [
+        FaithfulnessMetric(
+            threshold=THRESHOLD,
+            model=GroqJudge(),
+            include_reason=True  # prints WHY each score --- shows which claims were unsupported
+        ),
+        AnswerRelevancyMetric(
+            threshold=THRESHOLD,
+            model=GroqJudge(),
+            include_reason=True  # prints WHY each score --- shows which claims were unsupported
+        )
+    ]
+
+    # Evaluate : runs the metrics for every testcase and prints report
+    result = evaluate(test_cases=test_cases, metrics=metrics)
+    return summarize_by_metric(result=result)
 
 
 if __name__ == "__main__":
-    ctx = [
-        "Online eval means evaluating your system on live production traffic "
-        "after deployment. It works without an answer key, unlike offline eval."
-    ]
-
-    # non-streaming
-    print(generate("what is online eval?", ctx))
+    print_summary("generator_results", run())
