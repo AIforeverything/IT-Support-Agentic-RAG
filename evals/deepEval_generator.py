@@ -14,17 +14,17 @@ is purely the generator's fault --- the context was already correct.
 """
 import time
 from pathlib import Path
+from app.core.config import get_settings
 from evals.harness import load_golden, summarize_by_metric, print_summary
 from evals.llm_generator import generate
-from evals.gemini_judge import GeminiJudge
-from evals.groq_judge import GroqJudge
+from evals.llm_judge import groq_judge, gpt_judge, gemini_judge
 
 from deepeval.test_case import LLMTestCase
 from deepeval.metrics import FaithfulnessMetric, AnswerRelevancyMetric
 from deepeval import evaluate
 THRESHOLD = 0.7
-
 DELAY_SECONDS = 1
+settings = get_settings()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 FILE_PATH = BASE_DIR/"evals"/"golden_dataset" / \
@@ -52,7 +52,7 @@ def run():
                 retrieval_context=context,  # faithfulness checks the answer aginst this context
             )
         )
-        print(f"answer-{i}: ", answer[:10])
+        print(f"answer-{i}: ", answer[:50])
         i = i+1
         answers.append(answer)
 
@@ -60,12 +60,12 @@ def run():
     metrics = [
         FaithfulnessMetric(
             threshold=THRESHOLD,
-            model=GroqJudge(),
+            model=gpt_judge,
             include_reason=True  # prints WHY each score --- shows which claims were unsupported
         ),
         AnswerRelevancyMetric(
             threshold=THRESHOLD,
-            model=GroqJudge(),
+            model=gpt_judge,
             include_reason=True  # prints WHY each score --- shows which claims were unsupported
         )
     ]

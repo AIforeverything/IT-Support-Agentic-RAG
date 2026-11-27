@@ -12,8 +12,10 @@ class Settings(BaseSettings):
     HUGGINGFACE_API_KEY: str  # not mandatory, because str = ''
     GEMINI_API_KEY: str = " "
     GEMINI_MODEL: str = " "
-    GROQ_API_KEY: str
-    GROQ_MODEL: str  # required, otherwise pydantic throws an error
+    GROQ_API_KEY: str = " "
+    GROQ_MODEL: str = " "  # required, otherwise pydantic throws an error
+    OPENAI_API_KEY: str = " "
+    OPENAI_MODEL_NAME: str = " "
     LANGSMITH_API_KEY: str = " "
     TAVILY_API_KEY: str  # required
     TEMPERATURE: float = 0
